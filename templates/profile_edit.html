@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<h2>Edit Profile</h2>
+
+<form method="POST">
+    <label>Name:</label>
+    <input type="text" name="name" value="{{ current_user.name }}" required><br><br>
+
+    <label>Phone:</label>
+    <input type="text" name="phone" value="{{ current_user.phone }}"><br><br>
+
+    <label>Location:</label>
+    <input type="text" name="location" value="{{ current_user.location }}"><br><br>
+
+    {% if current_user.role == 'user' %}
+        <label>Skills:</label>
+        <input type="text" name="skills" value="{{ current_user.skills }}"><br><br>
+
+        <label>Experience Level:</label>
+        <input type="text" name="experience_level" value="{{ current_user.experience_level }}"><br><br>
+
+        <label>Education:</label>
+        <input type="text" name="education" value="{{ current_user.education }}"><br><br>
+    {% endif %}
+
+    <button type="submit">Update Profile</button>
+</form>
+{% endblock %}

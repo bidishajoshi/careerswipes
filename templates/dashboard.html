@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}CareerSwipe — Swipe Jobs{% endblock %}
+
+{% block extra_css %}
+<style>
+/* BODY */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f7fb;
+}
+
+/* HEADER */
+.header {
+    background: #1e3a8a;
+    color: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.header h1 { margin:0; font-size:22px; font-weight:bold; }
+.header h1 span.green { color: #00d084; }
+.header span.nav-links { display:flex; gap:25px; font-size:14px; }
+.header span.nav-links a { color:#fff; text-decoration:none; font-weight:500; }
+.header span.nav-links a:hover { text-decoration:underline; }
+
+/* CARD CONTAINER */
+#card-container {
+    margin: 30px auto;
+    width: 360px;
+    max-width: 95%;
+    height: 520px;
+    position: relative;
+}
+
+/* CARD */
+.card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background:#fff;
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    cursor: grab;
+    overflow:hidden;
+    transition: transform 0.3s ease, box-shadow 0.2s;
+}
+.card:hover { box-shadow:0 10px 25px rgba(0,0,0,0.15); }
+
+/* CARD TEXT */
+.card h2 { margin:0 0 6px 0; color:#222; font-size:20px; }
+.card h4 { margin:0 0 10px 0; color:#555; font-size:16px; }
+.card p { color:#666; font-size:14px; line-height:1.4; }
+
+/* OVERLAYS */
+.overlay {
+    position: absolute;
+    width:100%;
+    height:100%;
+    border-radius:12px;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.2s;
+}
+.overlay.like { background: rgba(0,123,255,0.2); }
+.overlay.dislike { background: rgba(220,53,69,0.2); }
+
+/* INDICATORS */
+.indicator {
+    position: absolute;
+    top:20px;
+    font-weight:bold;
+    font-size:24px;
+    opacity:0;
+    transition: opacity 0.2s;
+}
+.like-text { right:20px; color:#007bff; }
+.dislike-text { left:20px; color:#dc3545; }
+
+/* BUTTONS */
+.buttons {
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+    gap:30px;
+}
+button {
+    border:none;
+    border-radius:50%;
+    width:60px;
+    height:60px;
+    font-size:20px;
+    cursor:pointer;
+    background:white;
+    box-shadow:0 6px 15px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+button:hover { transform: scale(1.1); }
+#like-btn { color:#007bff; }
+#dislike-btn { color:#dc3545; }
+
+/* NO JOBS */
+.no-jobs { margin-top:150px; text-align:center; }
+.no-jobs h2 { color:#1e3a8a; font-size:22px; }
+.no-jobs p { color:#666; font-size:16px; }
+
+/* RESPONSIVE */
+@media(max-width:600px){
+    #card-container{ height:480px; }
+    .card h2{ font-size:18px; }
+    .card h4{ font-size:15px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div id="card-container"></div>
+
+    <div class="buttons">
+        <button id="dislike-btn">❌</button>
+        <button id="like-btn">❤️</button>
+    </div>
+    <div class="footer">
+        <footer class="footer">
+    © 2025 CareerSwipe — Find your next adventure.
+</footer>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let jobs = [];
+let currentIndex = 0;
+
+/* Load Jobs */
+async function loadJobs(){
+    const res = await fetch('/api/jobs');
+    const data = await res.json();
+    jobs = data.jobs;
+    showCard();
+}
+
+/* Show Card */
+function showCard(){
+    const container = document.getElementById('card-container');
+    container.innerHTML = "";
+
+    if(currentIndex >= jobs.length){
+        container.innerHTML = `
+            <div class="no-jobs">
+                <h2>CareerSwipe</h2>
+                <p>No jobs available at the moment</p>
+            </div>
+        `;
+        return;
+    }
+
+    const job = jobs[currentIndex];
+
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML = `
+        <div class="overlay like"></div>
+        <div class="overlay dislike"></div>
+        <div class="indicator like-text">LIKE</div>
+        <div class="indicator dislike-text">SKIP</div>
+        <h2>${job.title}</h2>
+        <h4>${job.company_name}</h4>
+        <p>${job.description}</p>
+        <p><b>Skills:</b> ${job.skills}</p>
+    `;
+    container.appendChild(card);
+    addSwipe(card, job.id);
+}
+
+/* Swipe logic */
+function addSwipe(card, jobId){
+    let startX=0, currentX=0, isDragging=false;
+    const likeOverlay = card.querySelector('.overlay.like');
+    const dislikeOverlay = card.querySelector('.overlay.dislike');
+    const likeText = card.querySelector('.like-text');
+    const dislikeText = card.querySelector('.dislike-text');
+
+    card.addEventListener('mousedown', start);
+    card.addEventListener('touchstart', start);
+
+    function start(e){
+        isDragging=true;
+        startX=e.touches ? e.touches[0].clientX : e.clientX;
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', end);
+        document.addEventListener('touchmove', move);
+        document.addEventListener('touchend', end);
+    }
+
+    function move(e){
+        if(!isDragging) return;
+        currentX=(e.touches ? e.touches[0].clientX : e.clientX)-startX;
+        let rotate = currentX/10;
+        card.style.transform = `translateX(${currentX}px) rotate(${rotate}deg)`;
+
+        let opacity = Math.min(Math.abs(currentX)/120,1);
+        if(currentX>0){
+            likeOverlay.style.opacity = opacity;
+            likeText.style.opacity = opacity;
+            dislikeOverlay.style.opacity=0;
+            dislikeText.style.opacity=0;
+        } else {
+            dislikeOverlay.style.opacity = opacity;
+            dislikeText.style.opacity = opacity;
+            likeOverlay.style.opacity=0;
+            likeText.style.opacity=0;
+        }
+    }
+
+    function end(){
+        isDragging=false;
+        if(currentX>120){
+            swipeAction(jobId,'like');
+            card.style.transform="translateX(500px) rotate(15deg)";
+        } else if(currentX<-120){
+            swipeAction(jobId,'dislike');
+            card.style.transform="translateX(-500px) rotate(-15deg)";
+        } else {
+            card.style.transform="";
+            likeOverlay.style.opacity=0;
+            dislikeOverlay.style.opacity=0;
+            likeText.style.opacity=0;
+            dislikeText.style.opacity=0;
+        }
+
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', end);
+        document.removeEventListener('touchmove', move);
+        document.removeEventListener('touchend', end);
+    }
+}
+
+/* Swipe API */
+async function swipeAction(jobId, action){
+    await fetch(`/swipe/${jobId}/${action}`, {method:'POST'});
+    currentIndex++;
+    setTimeout(showCard,300);
+}
+
+/* Buttons */
+document.getElementById('like-btn').onclick = ()=>{ if(jobs[currentIndex]) swipeAction(jobs[currentIndex].id,'like'); };
+document.getElementById('dislike-btn').onclick = ()=>{ if(jobs[currentIndex]) swipeAction(jobs[currentIndex].id,'dislike'); };
+
+loadJobs();
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Company Dashboard{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+
+    <!-- Header with Add Job Button -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>Your Job Postings</h2>
+        <a href="{{ url_for('add_job') }}" class="btn" style="width: auto;">+ Post New Job</a>
+    </div>
+
+    <!-- Job Listings -->
+    {% if jobs and jobs|length > 0 %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            {% for job in jobs %}
+                <div class="job-card" style="background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                    
+                    <!-- Job Title -->
+                    <h3 style="margin-top: 0;">
+                        <a href="{{ url_for('job_detail', job_id=job.id) }}" style="color: #333; text-decoration: none;">
+                            {{ job.title }}
+                        </a>
+                    </h3>
+                    
+                    <!-- Placeholder Date -->
+                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 1rem;">
+                        Posted on: {{ job.created_at.strftime('%Y-%m-%d') if job.created_at else 'N/A' }}
+                    </p>
+
+                    <!-- Job Skills -->
+                    <div class="skills" style="margin-bottom: 1rem;">
+                        {% if job.skills %}
+                            {% for skill in job.skills.split(',') %}
+                                <span style="display: inline-block; background: #eef2f7; color: #2557a7; padding: 0.25rem 0.5rem; margin: 0.2rem; border-radius: 6px; font-size: 0.85rem;">
+                                    {{ skill.strip() }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Likes and Applicants -->
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 500; color: #333;">Likes: {{ job.likes_count or 0 }}</span>
+                        <a href="#" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Applicants</a>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- No Jobs -->
+        <div class="glass-panel" style="padding: 3rem; text-align: center; background: #f5f7fa; border-radius: 12px;">
+            <p style="color: #888; margin-bottom: 1.5rem;">You haven't posted any jobs yet.</p>
+            <a href="{{ url_for('add_job') }}" class="btn" style="width: auto;">Create First Job</a>
+        </div>
+    {% endif %}
+    <footer class="footer"
+    text-align: center;
+    padding: 15px;
+    background: #0f1115;
+    color: #8aa0b8;
+    font-size: 14px;
+    border-top: 1px solid #1f2a38;
+    position: fixed;
+    bottom: 0;
+    width: 100%;>
+    © 2025 CareerSwipe — Find your next adventure.
+    
+</footer>
+</div>
+{% endblock %}

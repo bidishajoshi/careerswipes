@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }}{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+    <div class="glass-panel" style="padding: 3rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div>
+                <h1 style="margin-top: 0; margin-bottom: 0.5rem; background: linear-gradient(to right, var(--primary-color), #3b82f6); -webkit-background-clip: text; background-clip: text; color: transparent;">{{ job.title }}</h1>
+                <h3 style="margin-top: 0; color: var(--text-color);">{{ job.company_name }}</h3>
+            </div>
+            {% if current_user.role == 'company' and job.company_id == current_user.id %}
+                <span class="skill-tag" style="background: rgba(37, 99, 235, 0.1); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 999px; font-weight: 500;">Your Posting</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 0.5rem;">Required Skills</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                {% for skill in job.skills.split(',') %}
+                    <span class="skill-tag">{{ skill.strip() }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 0.5rem;">Job Description</h4>
+            <div style="line-height: 1.8; color: var(--text-color); white-space: pre-wrap;">{{ job.description }}</div>
+        </div>
+
+        {% if current_user.role == 'user' %}
+            <!-- For users: allow swiping from detail window? For simplicity, we just provide a back button to the dashboard -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="{{ url_for('dashboard') }}" class="btn" style="width: auto;">Back to Swiping</a>
+            </div>
+        {% elif current_user.role == 'company' %}
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="{{ url_for('company_dashboard') }}" class="btn" style="width: auto; background: var(--surface-color); border: 1px solid var(--glass-border);">Back to Dashboard</a>
+            </div>
+        {% endif %}
+    </div>
+    <div><footer class="footer"
+    text-align: center;
+    padding: 15px;
+    background: #0f1115;
+    color: #8aa0b8;
+    font-size: 14px;
+    border-top: 1px solid #1f2a38;
+    position: fixed;
+    bottom: 0;
+    width: 100%;>
+    © 2025 CareerSwipe — Find your next adventure.
+    
+</footer></div>
+</div>
+{% endblock %}
