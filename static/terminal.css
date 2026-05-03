@@ -48,10 +48,7 @@ body {
             margin-bottom: 1rem;
             border-radius: 5px;
         }
- .dashboard {
-            display: flex;
-            flex-direction: column;
-        }
+ 
         .dashboard-card {
             background-color: #f9f9f9;
             padding: 1rem;
