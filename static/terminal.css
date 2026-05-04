@@ -30,10 +30,7 @@ body {
         nav ul li {
             margin: 1rem 0;
         }
-        nation: none;
-            color: #333;
-            font-weight: bold;
-        }
+        
         section {
             flex: 1;
             
