@@ -1,4 +1,4 @@
-📘 CareerSwipe – Swap-Based Job Recommendation System
+
 
 🚀 Overview
 
